@@ -52,6 +52,14 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				medical: {
+					red: 'hsl(var(--medical-red))',
+					'red-light': 'hsl(var(--medical-red-light))',
+					'red-dark': 'hsl(var(--medical-red-dark))',
+					blue: 'hsl(var(--medical-blue))',
+					green: 'hsl(var(--medical-green))'
+				},
+				urgent: 'hsl(var(--urgent))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
