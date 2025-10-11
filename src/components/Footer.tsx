@@ -1,4 +1,4 @@
-import { Heart, Phone, Mail, MapPin, Facebook, Twitter, Instagram } from "lucide-react";
+import { Heart, Mail, Facebook, Twitter, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {
@@ -58,21 +58,14 @@ const Footer = () => {
             <h4 className="font-semibold">Contact Us</h4>
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-medical-red" />
-                <span className="text-background/80">Emergency: (555) 911-LIFE</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-medical-red" />
                 <span className="text-background/80">info@lifeconnect.org</span>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-medical-red" />
-                <span className="text-background/80">Downtown Medical District</span>
-              </div>
+              <p className="text-background/70 leading-relaxed">
+                Have questions? We're here to help! Reach out to us via email 
+                and we'll get back to you as soon as possible.
+              </p>
             </div>
-            <Button variant="outline" size="sm" className="border-background/20 text-background hover:bg-background hover:text-foreground">
-              Emergency Hotline
-            </Button>
           </div>
         </div>
 

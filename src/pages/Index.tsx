@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import BloodRequests from "@/components/BloodRequests";
 import DonorInfo from "@/components/DonorInfo";
 import Footer from "@/components/Footer";
+import AboutUs from "@/components/ui/aboutus";
 
 const Index = () => {
   return (
@@ -12,6 +13,7 @@ const Index = () => {
         <Hero />
         <BloodRequests />
         <DonorInfo />
+        <AboutUs />
       </main>
       <Footer />
     </div>
