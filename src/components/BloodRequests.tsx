@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, Phone, AlertCircle, Droplet, Heart } from "lucide-react";
+import { MapPin, Clock, Phone, AlertCircle, Droplet, Heart, X, Calendar, User, Mail } from "lucide-react";
 
 const bloodRequests = [
   {
@@ -122,141 +122,399 @@ const getButtonStyle = (urgency) => {
     : "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg";
 };
 
+const DonationModal = ({ isOpen, onClose, hospital }) => {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    bloodType: hospital?.bloodType || "",
+    date: "",
+    time: "",
+    idNumber: "",
+    medicalConditions: "",
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Donation scheduled:", formData);
+    alert(`Donation appointment scheduled at ${hospital.hospital}!\n\nWe'll send a confirmation to ${formData.email}`);
+    onClose();
+    setFormData({
+      fullName: "",
+      email: "",
+      phone: "",
+      bloodType: hospital?.bloodType || "",
+      date: "",
+      time: "",
+      idNumber: "",
+      medicalConditions: "",
+    });
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Modal Header */}
+        <div className="sticky top-0 bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-t-2xl">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Schedule Blood Donation</h3>
+              <p className="text-red-100 text-sm">{hospital?.hospital}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white hover:bg-red-800 rounded-full p-2 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-6">
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <Droplet className="h-8 w-8 text-red-600" />
+              <div>
+                <p className="font-semibold text-gray-900">Blood Type Needed: {hospital?.bloodType}</p>
+                <p className="text-sm text-gray-600">Urgency: {hospital?.urgency}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {/* Full Name */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <User className="inline h-4 w-4 mr-1" />
+                Full Name *
+              </label>
+              <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                placeholder="John Doe"
+              />
+            </div>
+
+            {/* Email and Phone */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Mail className="inline h-4 w-4 mr-1" />
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                  placeholder="john@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Phone className="inline h-4 w-4 mr-1" />
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                  placeholder="+254 700 000 000"
+                />
+              </div>
+            </div>
+
+            {/* Blood Type and ID Number */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Droplet className="inline h-4 w-4 mr-1" />
+                  Your Blood Type *
+                </label>
+                <select
+                  name="bloodType"
+                  value={formData.bloodType}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                >
+                  <option value="">Select blood type</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  ID/Passport Number *
+                </label>
+                <input
+                  type="text"
+                  name="idNumber"
+                  value={formData.idNumber}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                  placeholder="12345678"
+                />
+              </div>
+            </div>
+
+            {/* Date and Time */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Calendar className="inline h-4 w-4 mr-1" />
+                  Preferred Date *
+                </label>
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Clock className="inline h-4 w-4 mr-1" />
+                  Preferred Time *
+                </label>
+                <select
+                  name="time"
+                  value={formData.time}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                >
+                  <option value="">Select time</option>
+                  <option value="08:00">08:00 AM</option>
+                  <option value="09:00">09:00 AM</option>
+                  <option value="10:00">10:00 AM</option>
+                  <option value="11:00">11:00 AM</option>
+                  <option value="12:00">12:00 PM</option>
+                  <option value="13:00">01:00 PM</option>
+                  <option value="14:00">02:00 PM</option>
+                  <option value="15:00">03:00 PM</option>
+                  <option value="16:00">04:00 PM</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Medical Conditions */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Any Medical Conditions or Medications?
+              </label>
+              <textarea
+                name="medicalConditions"
+                value={formData.medicalConditions}
+                onChange={handleChange}
+                rows="3"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
+                placeholder="Please list any medical conditions, current medications, or recent travel..."
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 mt-8">
+            <Button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-6 text-base font-semibold rounded-lg transition-all"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-6 text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all"
+            >
+              <Heart className="h-5 w-5 mr-2" />
+              Confirm Donation
+            </Button>
+          </div>
+
+          <p className="text-xs text-gray-500 text-center mt-4">
+            By submitting this form, you confirm that you meet the eligibility criteria for blood donation.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const BloodRequests = () => {
   const [activeCard, setActiveCard] = useState(null);
   const [showAll, setShowAll] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedHospital, setSelectedHospital] = useState(null);
 
-  // Show only first 3 requests initially, all when showAll is true
   const displayedRequests = showAll ? bloodRequests : bloodRequests.slice(0, 3);
 
+  const handleBookAppointment = (request) => {
+    setSelectedHospital(request);
+    setModalOpen(true);
+  };
+
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-full text-sm font-medium mb-4 shadow-sm">
-            <Droplet className="h-4 w-4" />
-            Active Requests
+    <>
+      <section id="blood-requests" className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-full text-sm font-medium mb-4 shadow-sm">
+              <Droplet className="h-4 w-4" />
+              Active Requests
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4">
+              Urgent Blood Requests
+            </h2>
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
+              Hospitals near you need your help. Every donation can save up to three lives.
+            </p>
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4">
-            Urgent Blood Requests
-          </h2>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
-            Hospitals near you need your help. Every donation can save up to three lives.
-          </p>
-        </div>
 
-        {/* Cards Grid - Full Width */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-          {displayedRequests.map((request) => (
-            <Card
-              key={request.id}
-              onClick={() =>
-                setActiveCard(activeCard === request.id ? null : request.id)
-              }
-              className={`relative overflow-hidden cursor-pointer transition-all duration-300 border-2 h-full
-                ${
-                  activeCard === request.id
-                    ? "scale-105 shadow-2xl z-10 border-red-400"
-                    : "hover:scale-102 hover:shadow-xl border-gray-200"
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+            {displayedRequests.map((request) => (
+              <Card
+                key={request.id}
+                onClick={() =>
+                  setActiveCard(activeCard === request.id ? null : request.id)
                 }
-                ${request.urgency === "Critical" ? "ring-2 ring-red-200" : ""}
-              `}
-            >
-              {/* Critical Indicator Bar */}
-              {request.urgency === "Critical" && (
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-red-600 to-red-500 animate-pulse" />
-              )}
+                className={`relative overflow-hidden cursor-pointer transition-all duration-300 border-2 h-full
+                  ${
+                    activeCard === request.id
+                      ? "scale-105 shadow-2xl z-10 border-red-400"
+                      : "hover:scale-102 hover:shadow-xl border-gray-200"
+                  }
+                  ${request.urgency === "Critical" ? "ring-2 ring-red-200" : ""}
+                `}
+              >
+                {request.urgency === "Critical" && (
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-red-600 to-red-500 animate-pulse" />
+                )}
 
-              <CardHeader className="pb-3 pt-5 px-4 sm:px-5">
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <Badge
-                    className={`text-xs font-semibold border-2 ${getUrgencyColor(
-                      request.urgency
-                    )} shadow-sm`}
-                  >
-                    {request.urgency}
-                  </Badge>
-                  {request.urgency === "Critical" && (
-                    <AlertCircle className="h-5 w-5 text-red-600 animate-pulse flex-shrink-0" />
-                  )}
-                </div>
-                <CardTitle className="text-base sm:text-lg font-bold leading-tight pr-2">
-                  {request.hospital}
-                </CardTitle>
-              </CardHeader>
+                <CardHeader className="pb-3 pt-5 px-4 sm:px-5">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <Badge
+                      className={`text-xs font-semibold border-2 ${getUrgencyColor(
+                        request.urgency
+                      )} shadow-sm`}
+                    >
+                      {request.urgency}
+                    </Badge>
+                    {request.urgency === "Critical" && (
+                      <AlertCircle className="h-5 w-5 text-red-600 animate-pulse flex-shrink-0" />
+                    )}
+                  </div>
+                  <CardTitle className="text-base sm:text-lg font-bold leading-tight pr-2">
+                    {request.hospital}
+                  </CardTitle>
+                </CardHeader>
 
-              <CardContent className="space-y-4 px-4 sm:px-5 pb-5">
-                {/* Blood Type Display */}
-                <div className="text-center p-4 sm:p-5 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border-2 border-red-100 shadow-inner">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <Droplet className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
-                    <div className="text-2xl sm:text-3xl font-bold text-red-600">
-                      {request.bloodType}
+                <CardContent className="space-y-4 px-4 sm:px-5 pb-5">
+                  <div className="text-center p-4 sm:p-5 bg-gradient-to-br from-red-50 to-pink-50 rounded-xl border-2 border-red-100 shadow-inner">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <Droplet className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
+                      <div className="text-2xl sm:text-3xl font-bold text-red-600">
+                        {request.bloodType}
+                      </div>
+                    </div>
+                    <div className="text-xs sm:text-sm font-medium text-gray-700">
+                      {request.unitsNeeded} units needed
                     </div>
                   </div>
-                  <div className="text-xs sm:text-sm font-medium text-gray-700">
-                    {request.unitsNeeded} units needed
-                  </div>
-                </div>
 
-                {/* Details */}
-                <div className="space-y-2.5 text-sm">
-                  <div className="flex items-center gap-2.5 text-gray-600">
-                    <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                    <span className="font-medium">
-                      {request.location} • {request.distance}
-                    </span>
+                  <div className="space-y-2.5 text-sm">
+                    <div className="flex items-center gap-2.5 text-gray-600">
+                      <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                      <span className="font-medium">
+                        {request.location} • {request.distance}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-gray-600">
+                      <Clock className="h-4 w-4 text-orange-600 flex-shrink-0" />
+                      <span className="font-medium">
+                        Within {request.deadline}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-gray-600">
+                      <Phone className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-mono">
+                        {request.contact}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2.5 text-gray-600">
-                    <Clock className="h-4 w-4 text-orange-600 flex-shrink-0" />
-                    <span className="font-medium">
-                      Within {request.deadline}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5 text-gray-600">
-                    <Phone className="h-4 w-4 text-green-600 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm font-mono">
-                      {request.contact}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Description */}
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg">
-                  {request.description}
-                </p>
+                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg">
+                    {request.description}
+                  </p>
 
-                {/* Action Button */}
-                <Button
-                  className={`w-full py-5 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all duration-300 ${getButtonStyle(
-                    request.urgency
-                  )} hover:scale-105`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    alert(`Booking appointment for ${request.hospital}`);
-                  }}
-                >
-                  <Heart className="h-4 w-4 mr-2" />
-                  Book Appointment
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  <Button
+                    id={`book-appointment-${request.id}`}
+                    className={`w-full py-5 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all duration-300 ${getButtonStyle(
+                      request.urgency
+                    )} hover:scale-105`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleBookAppointment(request);
+                    }}
+                  >
+                    <Heart className="h-4 w-4 mr-2" />
+                    Book Appointment
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* View All Button */}
+          <div className="text-center mt-10 sm:mt-12 lg:mt-16">
+            <Button 
+              onClick={() => setShowAll(!showAll)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 sm:px-12 py-5 sm:py-6 text-base sm:text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <AlertCircle className="h-5 w-5 mr-2" />
+              {showAll ? 'Show Less' : `View All Requests (${bloodRequests.length})`}
+            </Button>
+          </div>
         </div>
+      </section>
 
-        {/* View All Button */}
-        <div className="text-center mt-10 sm:mt-12 lg:mt-16">
-          <Button 
-            onClick={() => setShowAll(!showAll)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 sm:px-12 py-5 sm:py-6 text-base sm:text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          >
-            <AlertCircle className="h-5 w-5 mr-2" />
-            {showAll ? 'Show Less' : `View All Requests (${bloodRequests.length})`}
-          </Button>
-        </div>
-      </div>
-    </section>
+      <DonationModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        hospital={selectedHospital}
+      />
+    </>
   );
 };
 

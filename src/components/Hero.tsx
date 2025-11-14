@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Clock, Users, Heart } from "lucide-react";
-import heroImage from "@/assets/life-saver4.jpg";
+import heroImage from "@/assets/life-saver5.jpg";
 const Hero = () => {
   return (
     <section className="relative py-12 sm:py-16 md:py-20 lg:py-32 overflow-hidden">
@@ -51,12 +51,12 @@ const Hero = () => {
                   Donate Blood Now
                 </Button>
               </a>
-              <Button
-                className="w-full sm:w-auto bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 px-6 py-6 text-base sm:text-lg rounded-lg flex items-center justify-center gap-2 hover:scale-105 transition-transform"
-              >
-                <MapPin className="h-5 w-5" />
-                Find Nearby Drives
-              </Button>
+              <a href="#blood-requests" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 px-6 py-6 text-base sm:text-lg rounded-lg flex items-center justify-center gap-2 hover:scale-105 transition-transform">
+                  <MapPin className="h-5 w-5" />
+                  Find Nearby Hospitals
+                </Button>
+              </a>
             </div>
 
             {/* Quick info */}

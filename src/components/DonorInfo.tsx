@@ -130,9 +130,11 @@ const DonorInfo = () => {
                   <Button variant="hero" size="lg" className="w-full">
                     Schedule Donation
                   </Button>
+                   <a href="#blood-requests" className="w-full" >
                   <Button variant="medical" size="lg" className="w-full">
-                    Find Blood Drive
+                    Find Blood Requests
                   </Button>
+                  </a>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   No appointment? Walk-ins welcome at most locations.

@@ -24,13 +24,7 @@ const Header = () => {
             Donate Blood
             <span className="absolute inset-x-0 bottom-0 h-0.5 bg-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center"></span>
           </a>
-          <a
-            href="#hospitals"
-            className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2 px-1 group"
-          >
-            For Hospitals
-            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center"></span>
-          </a>
+          
           <a
             href="#about"
             className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2 px-1 group"
@@ -42,22 +36,22 @@ const Header = () => {
 
         {/* Action Buttons Section */}
         <div className="flex items-center gap-3">
-          <a href="#BloodRequests" className="hidden sm:block">
+          <a href="#donate" className="hidden sm:block">
             <Button 
               variant="outline" 
               size="sm" 
               className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/20 transition-colors duration-200"
             >
-              Find Blood Drives
+              Register as Donor
             </Button>
           </a>
           
-          <a href="#emergency" className="hidden sm:block">
+          <a href="#blood-requests" className="hidden sm:block">
             <Button 
               size="sm"
               className="bg-red-600 hover:bg-red-700 text-white shadow-sm transition-colors duration-200"
             >
-              Emergency Request
+              Blood Requests
             </Button>
           </a>
 
