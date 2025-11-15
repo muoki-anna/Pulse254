@@ -55,7 +55,7 @@ const donorSchema = new mongoose.Schema({
   idNumber: {
     type: String,
     required: [true, 'ID/Passport number is required'],
-    unique: true,
+
     trim: true
   },
   hasDonatedBefore: {
