@@ -5,9 +5,10 @@ import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 
 // Import routes
-//import authRoutes from './routes/auth.js';
+import authRoutes from './routes/auth.js';
 import bloodRequestRoutes from './routes/bloodRequests.js';
-//import appointmentRoutes from './routes/appointments.js';
+import appointmentRoutes from './routes/appointments.js';
+import donorRoutes from './routes/donors.js';
 
 // Load environment variables
 dotenv.config();
@@ -20,7 +21,7 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL,
   credentials: true,
 }));
 
@@ -58,9 +59,10 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
-//app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/blood-requests', bloodRequestRoutes);
-//app.use('/api/appointments', appointmentRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/donors', donorRoutes);
 
 // 404 handler
 app.use((req, res) => {

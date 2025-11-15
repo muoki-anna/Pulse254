@@ -1,12 +1,12 @@
-// Updated BloodRequests.tsx with API integration
+// Updated BloodRequests.tsx with Request Blood Modal
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { MapPin, Clock, Phone, AlertCircle, Droplet, Heart, X, Calendar, User, Mail, Loader2 } from "lucide-react";
-import { getBloodRequests, bookAppointment } from "../services/api";
-import type { BloodRequest } from "../services/api";
+import { MapPin, Clock, Phone, AlertCircle, Droplet, Heart, X, Calendar, User, Mail, Loader2, Plus, Stethoscope, Building } from "lucide-react";
+import { getBloodRequests, bookAppointment, createBloodRequest } from "../services/api";
+import type { BloodRequest, PublicBloodRequestData } from "../services/api";
 
 const getUrgencyColor = (urgency: string) => {
   switch (urgency) {
@@ -163,7 +163,7 @@ const DonationModal = ({ isOpen, onClose, hospital }: DonationModalProps) => {
                   required
                   disabled={bookingMutation.isPending}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all disabled:opacity-50"
-                  placeholder="john..example.com"
+                  placeholder="john@example.com"
                 />
               </div>
               <div>
@@ -327,10 +327,310 @@ const DonationModal = ({ isOpen, onClose, hospital }: DonationModalProps) => {
   );
 };
 
+// New Request Blood Modal Component
+interface RequestBloodModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+const RequestBloodModal = ({ isOpen, onClose, onSuccess }: RequestBloodModalProps) => {
+  const queryClient = useQueryClient();
+  const [formData, setFormData] = useState({
+    hospitalName: "", // ADDED THIS MISSING FIELD
+    bloodType: "",
+    unitsNeeded: "",
+    urgency: "Moderate",
+    location: "",
+    deadline: "",
+    contact: "",
+    description: "",
+  });
+
+  const requestMutation = useMutation({
+    mutationFn: createBloodRequest,
+    onSuccess: (data) => {
+      alert(`✅ Blood request submitted successfully!\n\nRequest ID: ${data._id}\n\nHospitals and donors will be notified of your urgent need.`);
+      queryClient.invalidateQueries({ queryKey: ['bloodRequests'] });
+      onClose();
+      setFormData({
+        hospitalName: "",
+        bloodType: "",
+        unitsNeeded: "",
+        urgency: "Moderate",
+        location: "",
+        deadline: "",
+        contact: "",
+        description: "",
+      });
+      if (onSuccess) onSuccess();
+    },
+    onError: (error: Error) => {
+      alert(`❌ Failed to submit blood request: ${error.message}\n\nPlease try again or contact support.`);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const requestData: PublicBloodRequestData = {
+      hospitalName: formData.hospitalName, // ADDED THIS
+      bloodType: formData.bloodType,
+      unitsNeeded: parseInt(formData.unitsNeeded),
+      urgency: formData.urgency,
+      location: formData.location,
+      deadline: formData.deadline,
+      contact: formData.contact,
+      description: formData.description,
+    };
+
+    requestMutation.mutate(requestData);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Modal Header */}
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-2xl">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Request Blood</h3>
+              <p className="text-blue-100 text-sm">Submit a blood request for urgent medical needs</p>
+            </div>
+            <button
+              onClick={onClose}
+              disabled={requestMutation.isPending}
+              className="text-white hover:bg-blue-800 rounded-full p-2 transition-colors disabled:opacity-50"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* Modal Body */}
+        <form onSubmit={handleSubmit} className="p-6">
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <Stethoscope className="h-8 w-8 text-blue-600" />
+              <div>
+                <p className="font-semibold text-gray-900">Need blood urgently?</p>
+                <p className="text-sm text-gray-600">Fill out this form and we'll notify available donors</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {/* Hospital Name - ADDED THIS FIELD */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <Building className="inline h-4 w-4 mr-1" />
+                Hospital/Clinic Name *
+              </label>
+              <input
+                type="text"
+                name="hospitalName"
+                value={formData.hospitalName}
+                onChange={handleChange}
+                required
+                disabled={requestMutation.isPending}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50"
+                placeholder="e.g., Nairobi Hospital"
+              />
+            </div>
+
+            {/* Blood Type and Units Needed */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Droplet className="inline h-4 w-4 mr-1" />
+                  Blood Type Needed *
+                </label>
+                <select
+                  name="bloodType"
+                  value={formData.bloodType}
+                  onChange={handleChange}
+                  required
+                  disabled={requestMutation.isPending}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50"
+                >
+                  <option value="">Select blood type</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Units Needed *
+                </label>
+                <input
+                  type="number"
+                  name="unitsNeeded"
+                  value={formData.unitsNeeded}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  max="10"
+                  disabled={requestMutation.isPending}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50"
+                  placeholder="e.g., 2"
+                />
+              </div>
+            </div>
+
+            {/* Urgency and Location */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <AlertCircle className="inline h-4 w-4 mr-1" />
+                  Urgency Level *
+                </label>
+                <select
+                  name="urgency"
+                  value={formData.urgency}
+                  onChange={handleChange}
+                  required
+                  disabled={requestMutation.isPending}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50"
+                >
+                  <option value="Moderate">Moderate</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <MapPin className="inline h-4 w-4 mr-1" />
+                  Location *
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  required
+                  disabled={requestMutation.isPending}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50"
+                  placeholder="e.g., Nairobi Hospital"
+                />
+              </div>
+            </div>
+
+            {/* Deadline and Contact */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Clock className="inline h-4 w-4 mr-1" />
+                  Needed Within *
+                </label>
+                <select
+                  name="deadline"
+                  value={formData.deadline}
+                  onChange={handleChange}
+                  required
+                  disabled={requestMutation.isPending}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50"
+                >
+                  <option value="">Select timeframe</option>
+                  <option value="24 hours">24 hours</option>
+                  <option value="48 hours">48 hours</option>
+                  <option value="3 days">3 days</option>
+                  <option value="1 week">1 week</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Phone className="inline h-4 w-4 mr-1" />
+                  Contact Number *
+                </label>
+                <input
+                  type="tel"
+                  name="contact"
+                  value={formData.contact}
+                  onChange={handleChange}
+                  required
+                  disabled={requestMutation.isPending}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50"
+                  placeholder="+254 700 000 000"
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Additional Details *
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={3}
+                required
+                disabled={requestMutation.isPending}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50"
+                placeholder="Please provide any additional information about the patient, medical condition, or specific requirements..."
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 mt-8">
+            <Button
+              type="button"
+              onClick={onClose}
+              disabled={requestMutation.isPending}
+              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-6 text-base font-semibold rounded-lg transition-all disabled:opacity-50"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={requestMutation.isPending}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-6 text-base font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            >
+              {requestMutation.isPending ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-5 w-5 mr-2" />
+                  Submit Request
+                </>
+              )}
+            </Button>
+          </div>
+
+          <p className="text-xs text-gray-500 text-center mt-4">
+            By submitting this request, you confirm that this is for legitimate medical purposes.
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const BloodRequests = () => {
   const [activeCard, setActiveCard] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedHospital, setSelectedHospital] = useState<BloodRequest | null>(null);
 
   // Fetch blood requests from API
@@ -344,7 +644,7 @@ const BloodRequests = () => {
 
   const handleBookAppointment = (request: BloodRequest) => {
     setSelectedHospital(request);
-    setModalOpen(true);
+    setDonationModalOpen(true);
   };
 
   if (isLoading) {
@@ -371,12 +671,55 @@ const BloodRequests = () => {
 
   if (!bloodRequests || bloodRequests.length === 0) {
     return (
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container text-center">
-          <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No blood requests available at the moment.</p>
-        </div>
-      </section>
+      <>
+        <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+          <div className="container text-center">
+            <div className="max-w-2xl mx-auto">
+              <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+                No Active Blood Requests
+              </h2>
+              <p className="text-gray-600 mb-6">
+                There are currently no active blood requests in the system. 
+                This is great news - it means all urgent needs are being met!
+              </p>
+              <p className="text-gray-500 mb-8">
+                However, if you or someone you know needs blood urgently, you can submit a request below.
+              </p>
+              
+              <div className="space-y-4">
+                <Button 
+                  onClick={() => setRequestModalOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Request Blood Urgently
+                </Button>
+                
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Or contact emergency services:</p>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <Button variant="outline" size="sm">
+                      🚑 Emergency: 911
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      📞 Red Cross: 0800 721 111
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <RequestBloodModal 
+          isOpen={requestModalOpen} 
+          onClose={() => setRequestModalOpen(false)}
+          onSuccess={() => {
+            // The query will automatically refetch and show the new request
+          }}
+        />
+      </>
     );
   }
 
@@ -396,6 +739,18 @@ const BloodRequests = () => {
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
               Hospitals near you need your help. Every donation can save up to three lives.
             </p>
+            
+            {/* Request Blood Button */}
+            <div className="mt-6">
+              <Button 
+                onClick={() => setRequestModalOpen(true)}
+                variant="outline"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Need Blood? Request Here
+              </Button>
+            </div>
           </div>
 
           {/* Cards Grid */}
@@ -507,10 +862,19 @@ const BloodRequests = () => {
         </div>
       </section>
 
+      {/* Modals */}
       <DonationModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
+        isOpen={donationModalOpen} 
+        onClose={() => setDonationModalOpen(false)} 
         hospital={selectedHospital}
+      />
+      
+      <RequestBloodModal 
+        isOpen={requestModalOpen} 
+        onClose={() => setRequestModalOpen(false)}
+        onSuccess={() => {
+          // The query will automatically refetch and show the new request
+        }}
       />
     </>
   );

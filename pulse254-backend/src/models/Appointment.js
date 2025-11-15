@@ -1,3 +1,4 @@
+// models/Appointment.js - FIXED VERSION
 import mongoose from 'mongoose';
 
 const appointmentSchema = new mongoose.Schema(
@@ -10,7 +11,7 @@ const appointmentSchema = new mongoose.Schema(
     hospital: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      // REMOVED: required: true - This allows public appointments
     },
     hospitalName: {
       type: String,

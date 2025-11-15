@@ -1,7 +1,7 @@
 // src/services/api.ts
-// Create this file in your frontend project
+import { apiConfig } from "../apiconfig/apiconfiguration";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = apiConfig.backUrl
 
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {
@@ -12,11 +12,6 @@ const handleResponse = async (response: Response) => {
   }
   
   return data;
-};
-
-// Helper function to get auth token
-const getAuthToken = () => {
-  return localStorage.getItem('token');
 };
 
 // ============================================
@@ -45,6 +40,8 @@ export interface BloodRequest {
 export const getBloodRequests = async (): Promise<BloodRequest[]> => {
   const response = await fetch(`${API_URL}/blood-requests`);
   const data = await handleResponse(response);
+  const jsonData = JSON.stringify(data);
+  console.log("This is the"+jsonData);
   return data.data;
 };
 
@@ -55,29 +52,32 @@ export const getBloodRequestById = async (id: string): Promise<BloodRequest> => 
   return data.data;
 };
 
-// Create blood request (Hospital only - Protected)
-export const createBloodRequest = async (requestData: {
+// Create blood request (Public - no authentication required)
+export interface PublicBloodRequestData {
+  hospitalName: string; // REQUIRED - This was missing!
   bloodType: string;
   unitsNeeded: number;
   urgency: string;
-  location?: string;
+  location: string;
   distance?: string;
   deadline: string;
-  contact?: string;
+  contact: string;
   description: string;
-}): Promise<BloodRequest> => {
-  const token = getAuthToken();
-  
+}
+
+export const createBloodRequest = async (requestData: PublicBloodRequestData): Promise<BloodRequest> => {
   const response = await fetch(`${API_URL}/blood-requests`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      // REMOVED Authorization header since it's public
     },
     body: JSON.stringify(requestData),
   });
   
   const data = await handleResponse(response);
+    const jsonData = JSON.stringify(data);
+  console.log("This is the"+jsonData);
   return data.data;
 };
 
@@ -137,11 +137,65 @@ export const bookAppointment = async (appointmentData: AppointmentData): Promise
 export const getAppointmentById = async (id: string): Promise<Appointment> => {
   const response = await fetch(`${API_URL}/appointments/${id}`);
   const data = await handleResponse(response);
+  console.log(data);
   return data.data;
 };
 
 // ============================================
-// AUTHENTICATION API (Hospital)
+// DONOR REGISTRATION API
+// ============================================
+
+export interface DonorRegistrationData {
+  fullName: string;
+  email: string;
+  phone: string;
+  bloodType: string;
+  age: number;
+  weight: number;
+  address: string;
+  city: string;
+  idNumber: string;
+  hasDonatedBefore?: boolean | string;
+  lastDonationDate?: string;
+  healthConditions?: string;
+}
+
+export interface Donor {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  bloodType: string;
+  age: number;
+  weight: number;
+  address: string;
+  city: string;
+  idNumber: string;
+  hasDonatedBefore: boolean;
+  lastDonationDate?: string;
+  healthConditions: string;
+  isActive: boolean;
+  availability: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Register new donor
+export const registerDonor = async (donorData: DonorRegistrationData): Promise<{ donor: Donor }> => {
+  const response = await fetch(`${API_URL}/donors/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(donorData),
+  });
+  
+  const data = await handleResponse(response);
+  return data.data;
+};
+
+// ============================================
+// AUTHENTICATION API (Hospital) - Optional
 // ============================================
 
 export interface HospitalLoginData {
@@ -217,7 +271,7 @@ export const hospitalRegister = async (registerData: HospitalRegisterData): Prom
 
 // Get current hospital (Protected)
 export const getCurrentHospital = async () => {
-  const token = getAuthToken();
+  const token = localStorage.getItem('token');
   
   const response = await fetch(`${API_URL}/auth/hospital/me`, {
     headers: {
@@ -237,16 +291,16 @@ export const logout = () => {
 
 // Check if user is logged in
 export const isLoggedIn = (): boolean => {
-  return !!getAuthToken();
+  return !!localStorage.getItem('token');
 };
 
 // ============================================
-// HOSPITAL DASHBOARD API (Protected)
+// HOSPITAL DASHBOARD API (Protected) - Optional
 // ============================================
 
 // Get hospital's own blood requests
 export const getMyBloodRequests = async (): Promise<BloodRequest[]> => {
-  const token = getAuthToken();
+  const token = localStorage.getItem('token');
   
   const response = await fetch(`${API_URL}/blood-requests/hospital/my-requests`, {
     headers: {
@@ -260,7 +314,7 @@ export const getMyBloodRequests = async (): Promise<BloodRequest[]> => {
 
 // Get hospital's appointments
 export const getHospitalAppointments = async (status?: string): Promise<Appointment[]> => {
-  const token = getAuthToken();
+  const token = localStorage.getItem('token');
   const url = status 
     ? `${API_URL}/appointments/hospital/all?status=${status}`
     : `${API_URL}/appointments/hospital/all`;
@@ -281,7 +335,7 @@ export const updateAppointmentStatus = async (
   status: string,
   notes?: string
 ): Promise<Appointment> => {
-  const token = getAuthToken();
+  const token = localStorage.getItem('token');
   
   const response = await fetch(`${API_URL}/appointments/${appointmentId}/status`, {
     method: 'PUT',

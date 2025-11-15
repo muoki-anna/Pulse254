@@ -1,3 +1,4 @@
+// models/BloodRequest.js
 import mongoose from 'mongoose';
 
 const bloodRequestSchema = new mongoose.Schema(
@@ -5,7 +6,7 @@ const bloodRequestSchema = new mongoose.Schema(
     hospital: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      // Made optional for public requests
     },
     hospitalName: {
       type: String,

@@ -64,7 +64,72 @@ export const getBloodRequestById = async (req, res) => {
   }
 };
 
-// @desc    Create blood request (Hospital only)
+// @desc    Create blood request (Public - no login required)
+// @route   POST /api/blood-requests/public
+// @access  Public
+export const createPublicBloodRequest = async (req, res) => {
+  try {
+    const {
+      hospitalName,
+      bloodType,
+      unitsNeeded,
+      urgency,
+      location,
+      distance,
+      deadline,
+      contact,
+      description,
+    } = req.body;
+
+    // Validate required fields
+    if (!hospitalName || !bloodType || !unitsNeeded || !urgency || !location || !contact) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required fields: hospitalName, bloodType, unitsNeeded, urgency, location, contact',
+      });
+    }
+
+    const bloodRequest = await BloodRequest.create({
+      hospital: null, // Since no user is logged in
+      hospitalName,
+      bloodType,
+      unitsNeeded,
+      urgency,
+      location,
+      distance,
+      deadline,
+      contact,
+      description,
+      status: 'active',
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Blood request created successfully',
+      data: bloodRequest,
+    });
+  } catch (error) {
+    console.error('Create Public Blood Request Error:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Create blood request (Hospital only - with authentication)
 // @route   POST /api/blood-requests
 // @access  Private (Hospital)
 export const createBloodRequest = async (req, res) => {
@@ -123,8 +188,8 @@ export const updateBloodRequest = async (req, res) => {
       });
     }
 
-    // Check ownership
-    if (bloodRequest.hospital.toString() !== req.user._id.toString()) {
+    // Check ownership (only for authenticated hospital requests)
+    if (bloodRequest.hospital && bloodRequest.hospital.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this blood request',
@@ -182,8 +247,8 @@ export const deleteBloodRequest = async (req, res) => {
       });
     }
 
-    // Check ownership
-    if (bloodRequest.hospital.toString() !== req.user._id.toString()) {
+    // Check ownership (only for authenticated hospital requests)
+    if (bloodRequest.hospital && bloodRequest.hospital.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this blood request',
