@@ -2,7 +2,11 @@ import { Button } from "../components/ui/button";
 import { Heart, Menu, X } from "lucide-react";
 import { useState } from "react";
 
-const Header = () => {
+interface HeaderProps {
+  onOpenDonorModal: () => void;
+}
+
+const Header = ({ onOpenDonorModal }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -11,6 +15,12 @@ const Header = () => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleDonorClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onOpenDonorModal();
+    closeMobileMenu();
   };
 
   return (
@@ -28,13 +38,13 @@ const Header = () => {
 
         {/* Desktop Navigation Section */}
         <nav className="hidden md:flex items-center gap-8">
-          <a
-            href="#donate"
-            className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2 px-1 group"
+          <button
+            onClick={handleDonorClick}
+            className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 py-2 px-1 group bg-transparent border-0 cursor-pointer"
           >
-            Donate Blood
+            Register as Donor
             <span className="absolute inset-x-0 bottom-0 h-0.5 bg-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center"></span>
-          </a>
+          </button>
           
           <a
             href="#about"
@@ -47,15 +57,14 @@ const Header = () => {
 
         {/* Action Buttons Section */}
         <div className="flex items-center gap-3">
-          <a href="#donate" className="hidden sm:block">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/20 transition-colors duration-200"
-            >
-              Register as Donor
-            </Button>
-          </a>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleDonorClick}
+            className="hidden sm:block border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/20 transition-colors duration-200"
+          >
+            Register as Donor
+          </Button>
           
           <a href="#blood-requests" className="hidden sm:block">
             <Button 
@@ -88,13 +97,12 @@ const Header = () => {
           <div className="container py-4 space-y-4">
             {/* Mobile Navigation Links */}
             <div className="space-y-2">
-              <a
-                href="#donate"
-                className="block py-3 px-4 text-base font-medium text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
-                onClick={closeMobileMenu}
+              <button
+                onClick={handleDonorClick}
+                className="block w-full text-left py-3 px-4 text-base font-medium text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200 bg-transparent border-0 cursor-pointer"
               >
-                Donate Blood
-              </a>
+                Register as Donor
+              </button>
               
               <a
                 href="#about"
@@ -107,18 +115,13 @@ const Header = () => {
 
             {/* Mobile Action Buttons */}
             <div className="space-y-3 pt-2 border-t">
-              <a 
-                href="#donate" 
-                className="block w-full"
-                onClick={closeMobileMenu}
+              <Button 
+                variant="outline" 
+                onClick={handleDonorClick}
+                className="w-full justify-center border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/20 transition-colors duration-200"
               >
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-center border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/20 transition-colors duration-200"
-                >
-                  Register as Donor
-                </Button>
-              </a>
+                Register as Donor
+              </Button>
               
               <a 
                 href="#blood-requests" 

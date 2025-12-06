@@ -409,12 +409,12 @@ const DonorRegistrationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose:
             >
               {isSubmitting ? (
                 <>
-
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Registering...
                 </>
               ) : (
                 <>
-
+                  <Heart className="mr-2 h-5 w-5" />
                   Register
                 </>
               )}
@@ -426,9 +426,13 @@ const DonorRegistrationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose:
   );
 };
 
-const DonorInfo = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface DonorInfoProps {
+  isModalOpen: boolean;
+  onOpenModal: () => void;
+  onCloseModal: () => void;
+}
 
+const DonorInfo = ({ isModalOpen, onOpenModal, onCloseModal }: DonorInfoProps) => {
   return (
     <>
       <section id="donate" className="py-16">
@@ -527,7 +531,7 @@ const DonorInfo = () => {
                       variant="hero"
                       size="lg"
                       className="w-full"
-                      onClick={() => setIsModalOpen(true)}
+                      onClick={onOpenModal}
                     >
                       Register as Donor
                     </Button>
@@ -550,7 +554,7 @@ const DonorInfo = () => {
       {/* Modal */}
       <DonorRegistrationModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={onCloseModal}
       />
     </>
   );
