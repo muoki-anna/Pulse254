@@ -1,7 +1,12 @@
 [build]
-  command = "npm run build"
+  base = "Frontend"  # or just "/" if netlify.toml is in Frontend folder
   publish = "dist"
+  command = "npm run build"
 
+[build.environment]
+  NODE_VERSION = "20"  # Use Node.js 20 (LTS)
+
+# Redirects for SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
