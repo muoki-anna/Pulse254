@@ -19,19 +19,51 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-}));
+// ========== FIXED CORS CONFIGURATION ==========
+const allowedOrigins = [
+  'https://pulse254.netlify.app',  // Your production frontend
+  'http://localhost:3000',         // React dev server
+  'http://localhost:5173',         // Vite dev server
+  'http://localhost:8080',         // Your existing allowed origin
+  'http://localhost:5000'          // Sometimes frontend might reference same port
+];
 
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+// ========== END CORS CONFIGURATION ==========
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Request logging middleware (development only)
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path}`);
+    console.log(`${req.method} ${req.path} - Origin: ${req.headers.origin || 'No Origin'}`);
     next();
   });
 }
@@ -55,6 +87,8 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
+    allowedOrigins: allowedOrigins,
+    requestOrigin: req.headers.origin || 'No Origin Header'
   });
 });
 
@@ -76,6 +110,16 @@ app.use((req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
+
+  // CORS error handling
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      success: false,
+      message: 'CORS Error: Origin not allowed',
+      allowedOrigins: allowedOrigins,
+      yourOrigin: req.headers.origin || 'Not provided'
+    });
+  }
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {
@@ -128,6 +172,8 @@ app.listen(PORT, () => {
   console.log(`📡 Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
+  console.log(`✅ Allowed Origins:`);
+  allowedOrigins.forEach(origin => console.log(`   - ${origin}`));
   console.log('========================================');
   console.log('');
 });
